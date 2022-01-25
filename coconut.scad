@@ -4,48 +4,76 @@
 /// 	make random coconut tree.
 ///
 /// 	parameters:
-/// 		size: size of the tree.
+/// 		tree_size: size of the tree.
 /// 		num_branch: number of branches.
 /// 		num_coconuts: number of coconuts.
-module random_coconut_tree(size, num_branch, num_coconuts) {
+///		tree_color: color of the tree
+///		add_coconuts_to_the_ground: will add coconuts on the ground
+///		add_coconuts_to_the_leaves: will add coconuts on the leaves
+///		min_random_leaf_rotation: minimum rotation angle for the leaves
+///			in all directions
+///		max_random_leaf_rotation: maximum rotation angle for the leaves
+///			in all directions
+///		branch_color: color of the branch
+///		number_of_leaf_levels: number of leaf levels
+///		leaf_color: color of the leaves
+///		leaf_rotation: angle of rotation of the leaves
+///		coconut_color: color of the coconuts
+///		coconut_min_random_angle: random angle of the coconuts
+///		coconut_max_random_angle: random angle of the coconuts
+module random_coconut_tree(tree_size=40, num_branch=20, num_coconuts=10,
+	tree_color="tan", add_coconuts_to_the_ground=true,
+	add_coconuts_to_the_leaves=true, min_random_leaf_rotation=0,
+	max_random_leaf_rotation=360, branch_color="green",
+	number_of_leaf_levels=15, leaf_color="green", leaf_rotation=30,
+	coconut_color="saddlebrown", coconut_min_random_angle=0,
+	coconut_max_random_angle=360) {
 
 	// trunk
-	color("tan") cylinder(r1=size/90, r2=size/100, h=size, $fn=24);
+	color("tan") cylinder(r1=tree_size/90, r2=tree_size/100, h=tree_size, $fn=24);
 
 	// add branches and coconuts at the top of the trunk
-	translate([0,0,size]) {
+	translate([0,0,tree_size]) {
 
 		// branches
 		for (i=[0:num_branch]) {
-			angles = rands(0,360,3);
+			angles = rands(min_random_leaf_rotation,max_random_leaf_rotation,3);
 			rotate([angles[0],angles[1],angles[2]]) {
-				branch(size);
+				branch(tree_size, branch_color, number_of_leaf_levels, leaf_color, leaf_rotation);
 			}
 		}
 
 		// coconuts
-		for(i=[0:num_coconuts]) {
-			coconuts(size);
+		if (add_coconuts_to_the_leaves) {
+			for(i=[0:num_coconuts]) {
+				coconuts(tree_size, coconut_color, coconut_min_random_angle, coconut_max_random_angle);
+			}
 		}
 
 	}
 
 	// add coconuts on the ground
-	ground_coconuts(size, num_coconuts/10);
+	if (add_coconuts_to_the_ground) {
+		ground_coconuts(tree_size, num_coconuts/10, coconut_color);
+	}
 }
 
 /// module branch:
 /// 	make branch.
 ///
 /// 	parameters:
-/// 		size: size of the tree.
-module branch(size) {
+/// 		branch_size: size of the tree.
+///		branch_color: color of the branch
+///		number_of_leaf_levels: number of leaf levels
+///		leaf_color: color of the leaves
+///		leaf_rotation: angle of rotation of the leaves
+module branch(branch_size, branch_color, number_of_leaf_levels, leaf_color, leaf_rotation) {
 
 	// make a branch
-	color("green") cylinder(r=size/500, h=size/3);
+	color(branch_color) cylinder(r=branch_size/500, h=branch_size/3);
 
 	//add surrounding leaves
-	leaves(size/3);
+	leaves(branch_size/3, number_of_leaf_levels, leaf_color, leaf_rotation);
 
 }
 
@@ -53,22 +81,24 @@ module branch(size) {
 /// 	make leaves around a branch.
 ///
 /// 	parameters:
-/// 		size: size of the branch.
-module leaves(size) {
+/// 		leaf_size: size of the branch.
+///		number_of_leaf_levels: number of leaf levels
+///		leaf_color: color of the leaves
+///		leaf_rotation: angle of rotation of the leaves
+module leaves(leaf_size, number_of_leaf_levels, leaf_color, leaf_rotation) {
 
-	// number of leaf levels
-	num = 15;
-	for (i=[1:num]) {
+	// add leaves on each level
+	for (i=[1:number_of_leaf_levels]) {
 
 		// add leaves on two sides
-		color("green") translate([0,0,(size/num)*i]) {
+		color(leaf_color) translate([0,0,(leaf_size/number_of_leaf_levels)*i]) {
 
-			rotate([30,0,0]) {
-				cylinder(r=size/300, h=size/3);
+			rotate([leaf_rotation,0,0]) {
+				cylinder(r=leaf_size/300, h=leaf_size/3);
 			}
 
-			rotate([-30,0,0]) {
-				cylinder(r=size/300, h=size/3);
+			rotate([-leaf_rotation,0,0]) {
+				cylinder(r=leaf_size/300, h=leaf_size/3);
 			}
 
 		}
@@ -80,14 +110,17 @@ module leaves(size) {
 /// 	make coconuts at the top of the tree in a random distribution.
 ///
 /// 	parameters:
-/// 		size: size of the tree.
-module coconuts(size) {
+/// 		coconut_size: size of the tree.
+///		coconut_color: color of the coconuts
+///		coconut_min_random_angle: random angle of the coconuts
+///		coconut_max_random_angle: random angle of the coconuts
+module coconuts(coconut_size, coconut_color, coconut_min_random_angle, coconut_max_random_angle) {
 
 	// make random angles
-	angles = rands(0,360,3);
+	angles = rands(coconut_min_random_angle,coconut_max_random_angle,3);
 	rotate([angles[0],angles[1],angles[2]]) {
-		translate([0,0,size/20]) {
-			color("saddlebrown") sphere(size/30);
+		translate([0,0,coconut_size/20]) {
+			color(coconut_color) sphere(coconut_size/30);
 		}
 	}
 
@@ -97,18 +130,19 @@ module coconuts(size) {
 /// 	make coconuts on the ground in a random distribution.
 ///
 /// 	parameters:
-/// 		size: size of the tree.
+/// 		tree_size: size of the tree.
 /// 		num: number of coconuts to add.
-module ground_coconuts(size, num) {
+///		coconut_color: color of the coconuts
+module ground_coconuts(tree_size, num, coconut_color) {
 
-	coconut_size=size/30;
+	coconut_size=tree_size/30;
 	translate([0,0,coconut_size/2]) {
 		for (i=[0:num]) {
 
 			// make random x and y locations on the ground
-			locations = rands(-size/3,size/3,2);
+			locations = rands(-tree_size/3,tree_size/3,2);
 			translate([locations[0],locations[1],0]) {
-				color("saddlebrown") sphere(size/30);
+				color(coconut_color) sphere(tree_size/30);
 			}
 
 		}
