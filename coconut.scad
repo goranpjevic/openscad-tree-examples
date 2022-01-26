@@ -30,7 +30,7 @@ module random_coconut_tree(tree_size=40, num_branch=20, num_coconuts=10,
 	coconut_max_random_angle=360) {
 
 	// trunk
-	color("tan") cylinder(r1=tree_size/90, r2=tree_size/100, h=tree_size, $fn=24);
+	color(tree_color) cylinder(r1=tree_size/90, r2=tree_size/100, h=tree_size, $fn=24);
 
 	// add branches and coconuts at the top of the trunk
 	translate([0,0,tree_size]) {
